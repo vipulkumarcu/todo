@@ -5,6 +5,11 @@ form.addEventListener('submit', addItem);
 
 // Delete event
 var deleteTask = document.getElementsByClassName('btn-danger');
+for (var i = 0; i < deleteTask.length; i++) {
+  deleteTask[i].addEventListener('click', function() {
+    removeItem(response);
+  });
+}
 
 
 // Count Variable for maintaining Row Count in Pending Tasks
@@ -25,15 +30,16 @@ var serial = 0;
 window.addEventListener ("DOMContentLoaded", () => 
 {
     // GET Request
-        axios.get ("https://crudcrud.com/api/028ebb3ee27e487cb54b93c39cdb6dc3/todoList")
+        axios
+            .get ("https://crudcrud.com/api/316eb85c14b840aab591306edfaa3fe1/todoList")
             .then ((response) => 
             {
                 for (let i = 0; i < response.data.length; i++)
                 {
-                    logInput (response.data[i]);
+                    logIncomplete (response.data[i]);
                 }
             })
-            .catch (error => console.log (error));
+            .catch((error) => console.log(error));
 });
 
 
@@ -58,21 +64,20 @@ function addItem(e)
         };
 
     // POST Request
-        axios.post ("https://crudcrud.com/api/028ebb3ee27e487cb54b93c39cdb6dc3/todoList", myObj)
-            .then (alert("Task Added Successfully"))
-            .catch (error => console.log (error));
-    
-    // Resetting the form
-        form.reset();
-    
-    // Refreshing the entire page
-        location.reload();
+        axios
+            .post('https://crudcrud.com/api/316eb85c14b840aab591306edfaa3fe1/todoList', myObj)
+            .then(() => {
+                alert('Task Added Successfully');
+                form.reset();
+                location.reload();
+            })
+            .catch((error) => console.log(error));
 }
 
 
 
 
-function logInput(response)
+function logIncomplete (response)
 {       
     // Extracting Data from the Object
         var taskID = response._id;
@@ -113,7 +118,7 @@ function logInput(response)
 
     
 
-    // Creating Edit button element
+    // Creating Check Box element
         var completed = document.createElement('INPUT');
         completed.setAttribute("type", "checkbox");
 
@@ -121,14 +126,14 @@ function logInput(response)
         completed.addEventListener('change', function() {
             if (this.checked)
             {
-                completedTaks(response, isCompleted, this);
+                completedTasks(response, isCompleted, this);
             } 
         });
 
-    // Appending text node
+    // Appending Check Box
         document.body.appendChild(completed);
 
-    // Appending Edit button to the column
+    // Appending Check Box to the column
         cell5.appendChild(completed);
 
 
@@ -143,7 +148,7 @@ function logInput(response)
     // Onclick Function Call
         deleteBtn.onclick = function(){removeItem(response);};
 
-    // Appending text node
+    // Appending Delete button
         deleteBtn.appendChild(document.createTextNode('Delete'));
 
     // Appending Delete button to the column
@@ -152,26 +157,64 @@ function logInput(response)
 
 
 
+function logComplete (response)
+{
+        // Extracting Data from the Object
+        var taskID = response._id;
+        var taskDate = response.Date;
+        var taskName = response.Task;
+        var taskDescription = response.Description;
+        
+    // Creating a new Table
+        var table = document.getElementById("completed_tasks");
+
+    // Creating new Table row
+        var row = table.insertRow(++count2);
+
+    // Creating new Columns in the newly created row
+        var cell0 = row.insertCell(0);
+        var cell1 = row.insertCell(1);
+        var cell2 = row.insertCell(2);
+        var cell3 = row.insertCell(3);
+        var cell4 = row.insertCell(4);
+
+
+
+    // Adding ID
+        cell0.innerHTML = taskID;
+        cell0.style = "display: none";
+
+    // Appending the data to the table
+        cell1.innerHTML = taskDate;
+        cell2.innerHTML = taskName;
+        cell3.innerHTML = taskDescription;
+        cell4.innerHTML = isCompleted;
+}
+
+
+
 
 // Remove item
-function removeItem(deleteItem)
+function removeItem(response)
 {
     // Storing the _id from the database in a variable
-        var serialNumber = deleteItem._id;
+        var serialNumber = response._id;
 
-    // DELETE request
-        axios.delete (`https://crudcrud.com/api/028ebb3ee27e487cb54b93c39cdb6dc3/todoList/${serialNumber}`)
-            .then (alert("Task Deleted"))
-            .catch(error => console.error(error));
-    
-    // Refreshing the entire page
-        location.reload();
+     // DELETE request
+        axios
+            .delete(`https://crudcrud.com/api/316eb85c14b840aab591306edfaa3fe1/todoList/${serialNumber}`)
+            .then(() => 
+            {
+                alert('Task Deleted');
+                location.reload();
+            })
+            .catch((error) => console.error(error));
 }
 
 
 
 // Completed Taks Table
-function completedTaks(response, isCompleted, deleteItem)
+function completedTasks (response, isCompleted, deleteItem) 
 {
     var rowCount = (deleteItem.parentNode.parentNode.rowIndex);
 
@@ -181,11 +224,10 @@ function completedTaks(response, isCompleted, deleteItem)
     isCompleted = true;
     response.Status = isCompleted;
 
-    console.log (response);
-
     // Updating Tasks Status in Database
-    axios.put (`https://crudcrud.com/api/028ebb3ee27e487cb54b93c39cdb6dc3/todoList/${serialNumber}`, response)
-            .then (alert("Task Completed Successfully"))
+        axios
+            .patch (`https://crudcrud.com/api/316eb85c14b840aab591306edfaa3fe1/todoList/${serialNumber}`, response)
+            .then(() => alert("Task Completed Successfully"))
             .catch(error => console.error(error));
 
     // Extracting Data from the Object
@@ -219,5 +261,11 @@ function completedTaks(response, isCompleted, deleteItem)
         cell3.innerHTML = taskDescription;
         cell4.innerHTML = isCompleted;
 
-        document.getElementById("pending_tasks").deleteRow(rowCount);
+    document.getElementById("pending_tasks").deleteRow(rowCount);
 }
+
+  
+  
+  
+  
+
